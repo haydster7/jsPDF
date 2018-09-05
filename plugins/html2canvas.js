@@ -998,6 +998,15 @@ function renderWindow(node, container, options, windowWidth, windowHeight) {
             canvas = crop(renderer.canvas, {width: renderer.canvas.width, height: renderer.canvas.height, top: 0, left: 0, x: 0, y: 0});
         } else if (node === clonedWindow.document.body || node === clonedWindow.document.documentElement || options.canvas != null) {
             canvas = renderer.canvas;
+        } else if (options.scale) {
+            var origBounds = {width: options.width != null ? options.width : bounds.width, height: options.height != null ? options.height : bounds.height, top: bounds.top, left: bounds.left, x: 0, y: 0};
+            var cropBounds = {};
+            for (var key in origBounds) {
+                if (origBounds.hasOwnProperty(key)) { cropBounds[key] = origBounds[key] * options.scale; }
+            }
+            canvas = crop(renderer.canvas, cropBounds);
+            canvas.style.width = origBounds.width + 'px';
+            canvas.style.height = origBounds.height + 'px';
         } else {
             canvas = crop(renderer.canvas, {width:  options.width != null ? options.width : bounds.width, height: options.height != null ? options.height : bounds.height, top: bounds.top, left: bounds.left, x: 0, y: 0});
         }
@@ -2944,11 +2953,22 @@ var log = _dereq_('../log');
 function CanvasRenderer(width, height) {
     Renderer.apply(this, arguments);
     this.canvas = this.options.canvas || this.document.createElement("canvas");
-    if (!this.options.canvas) {
-        this.canvas.width = width;
-        this.canvas.height = height;
-    }
     this.ctx = this.canvas.getContext("2d");
+    if (!this.options.canvas) {
+        if (this.options.dpi) {
+            this.options.scale = this.options.dpi / 96;   // 1 CSS inch = 96px.
+        }
+        if (this.options.scale) {
+            this.canvas.style.width = width + 'px';
+            this.canvas.style.height = height + 'px';
+            this.canvas.width = Math.floor(width * this.options.scale);
+            this.canvas.height = Math.floor(height * this.options.scale);
+            this.ctx.scale(this.options.scale, this.options.scale);
+        } else {
+            this.canvas.width = width;
+            this.canvas.height = height;
+        }
+    }
     this.taintCtx = this.document.createElement("canvas").getContext("2d");
     this.ctx.textBaseline = "bottom";
     this.variables = {};
@@ -3080,9 +3100,13 @@ CanvasRenderer.prototype.backgroundRepeatShape = function(imageContainer, backgr
 CanvasRenderer.prototype.renderBackgroundRepeat = function(imageContainer, backgroundPosition, size, bounds, borderLeft, borderTop) {
     var offsetX = Math.round(bounds.left + backgroundPosition.left + borderLeft), offsetY = Math.round(bounds.top + backgroundPosition.top + borderTop);
     this.setFillStyle(this.ctx.createPattern(this.resizeImage(imageContainer, size), "repeat"));
+    this.ctx.save();
     this.ctx.translate(offsetX, offsetY);
+    if (this.options.scale) {
+        this.ctx.scale(1/this.options.scale, 1/this.options.scale);
+    }
     this.ctx.fill();
-    this.ctx.translate(-offsetX, -offsetY);
+    this.ctx.restore();
 };
 
 CanvasRenderer.prototype.renderBackgroundGradient = function(gradientImage, bounds) {
@@ -3100,16 +3124,21 @@ CanvasRenderer.prototype.renderBackgroundGradient = function(gradientImage, boun
 };
 
 CanvasRenderer.prototype.resizeImage = function(imageContainer, size) {
+    var width = size.width, height = size.height;
+    if (this.options.scale) {
+        width *= this.options.scale;
+        height *= this.options.scale;
+    }
     var image = imageContainer.image;
-    if(image.width === size.width && image.height === size.height) {
+    if(image.width === width && image.height === height) {
         return image;
     }
 
     var ctx, canvas = document.createElement('canvas');
-    canvas.width = size.width;
-    canvas.height = size.height;
+    canvas.width = width;
+    canvas.height = height;
     ctx = canvas.getContext("2d");
-    ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, size.width, size.height );
+    ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, width, height );
     return canvas;
 };
 
