@@ -4361,6 +4361,7 @@
                   var cropArea = function cropArea(parmObj, parmX, parmY, parmWidth, parmHeight) {
                       var canvas = document.createElement('canvas');
                       canvas.scale(2,2);
+                      console.log('canvas scaling - double');
                       canvas.height = parmHeight;
                       canvas.width = parmWidth;
                       var ctx = canvas.getContext('2d');
