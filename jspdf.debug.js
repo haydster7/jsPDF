@@ -4360,6 +4360,7 @@
               if (notFittingHeight && options.pagesplit) {
                   var cropArea = function cropArea(parmObj, parmX, parmY, parmWidth, parmHeight) {
                       var canvas = document.createElement('canvas');
+                      canvas.scale(2,2);
                       canvas.height = parmHeight;
                       canvas.width = parmWidth;
                       var ctx = canvas.getContext('2d');
