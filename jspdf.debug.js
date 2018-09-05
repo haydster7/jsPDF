@@ -4342,8 +4342,6 @@
               K = I.scaleFactor,
               W = I.pageSize.getWidth(),
               H = I.pageSize.getHeight();
-          console.log('window/page info:');
-          console.dir(I);
 
           options = options || {};
           options.onrendered = function (obj) {
@@ -4362,8 +4360,6 @@
               if (notFittingHeight && options.pagesplit) {
                   var cropArea = function cropArea(parmObj, parmX, parmY, parmWidth, parmHeight) {
                       var canvas = document.createElement('canvas');
-                      canvas.scale(2,2);
-                      console.log('canvas scaling - double');
                       canvas.height = parmHeight;
                       canvas.width = parmWidth;
                       var ctx = canvas.getContext('2d');
@@ -4449,13 +4445,9 @@
 
                   callback(w, h, alias, args);
               }
-            console.log('addHTML plugin created options from passed options, entire object below:');
-            console.dir(options);
           }.bind(this);
 
           if (typeof html2canvas !== 'undefined' && !options.rstz) {
-              console.log('html2canvas being called with options:');
-              console.dir(options);
               return html2canvas(element, options);
           }
 
