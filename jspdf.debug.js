@@ -4342,7 +4342,7 @@
               K = I.scaleFactor,
               W = I.pageSize.getWidth(),
               H = I.pageSize.getHeight();
-          console.log('window/page info:);
+          console.log('window/page info:');
           console.dir(I);
 
           options = options || {};
